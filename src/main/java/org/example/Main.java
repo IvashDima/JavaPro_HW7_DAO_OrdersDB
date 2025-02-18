@@ -1,9 +1,13 @@
 package org.example;
 
+import org.example.dao.ClientDAOImpl;
+import org.example.dao.GoodDAOImpl;
+import org.example.model.Client;
+import org.example.model.Good;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
@@ -11,7 +15,10 @@ public class Main {
         {
             try {
                 try (Statement st = conn.createStatement()) {
-//                    st.execute("DROP TABLE IF EXISTS Flats");
+                    st.execute("DROP TABLE IF EXISTS Clients");
+                    st.execute("DROP TABLE IF EXISTS Goods");
+                    st.execute("DROP TABLE IF EXISTS Orders");
+                    st.execute("DROP TABLE IF EXISTS GoodsInOrders");
                     //st.execute("CREATE TABLE Flats (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, district VARCHAR(100) NOT NULL, roomNum INT, square DOUBLE)");
                 }
             } catch (SQLException ex) {
@@ -21,10 +28,12 @@ public class Main {
             cdao.createTable(Client.class);
             GoodDAOImpl gdao = new GoodDAOImpl(conn, "Goods");
             gdao.createTable(Good.class);
-            OrderDAOImpl odao = new OrderDAOImpl(conn, "Orders");
-            odao.createTable(Order.class);
-            GoodsInOrderDAOImpl godao = new GoodsInOrderDAOImpl(conn, "Orders");
-            godao.createTable(GoodsInOrder.class);
+//            OrderDAOImpl odao = new OrderDAOImpl(conn, "Orders");
+//            odao.createTable(Orders.class);
+//            GoodsInOrderDAOImpl godao = new GoodsInOrderDAOImpl(conn, "GoodsInOrders");
+//            godao.createTable(GoodsInOrder.class);
+
+
 
             Client c1 = new Client("Dmytro");
             cdao.add(c1);
@@ -34,15 +43,15 @@ public class Main {
             gdao.add(g1);
             Good g2 = new Good("Phone");
             gdao.add(g2);
-
-//            Order f1 = new Order(c1, g2);
-//            odao.add(f1);
-//            Order f2 = new Order(c2, g1);
-//            odao.add(f2);
-
-            List<Order> list = odao.getAll(Order.class);
-            for (Order order : list)
-                System.out.println(order);
+//
+////            Order f1 = new Order(c1, g2);
+////            odao.add(f1);
+////            Order f2 = new Order(c2, g1);
+////            odao.add(f2);
+//
+//            List<Orders> list = odao.getAll(Orders.class);
+//            for (Orders order : list)
+//                System.out.println(order);
 
         }
     }

@@ -1,13 +1,15 @@
-package org.example;
+package org.example.model;
 
-public class Good {
+import org.example.Id;
+
+public class Client {
     @Id
     private int id;
     private String name;
-    public Good() {
+    public Client() {
     }
 
-    public Good(String name) {
+    public Client(String name) {
         this.name = name;
     }
 

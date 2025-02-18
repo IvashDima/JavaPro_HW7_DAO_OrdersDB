@@ -1,4 +1,6 @@
-package org.example;
+package org.example.dao;
+
+import org.example.Id;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -32,7 +34,7 @@ public class AbstractDAO <T> {
             if(f != id){
                 f.setAccessible(true);
                 sql.append(f.getName()).append(" ");
-                if(f.getType()==int.class){
+                if(f.getType()==int.class || f.getType()== Class.class){
                     sql.append("INT,");
                 }else if (f.getType()==String.class){
                     sql.append("VARCHAR(100),");

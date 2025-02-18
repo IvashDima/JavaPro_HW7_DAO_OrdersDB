@@ -1,14 +1,16 @@
-package org.example;
+package org.example.model;
+
+import org.example.Id;
 
 public class GoodsInOrder {
     @Id
     private int id;
-    private Order order;
+    private Orders order;
     private Good good;
     public GoodsInOrder() {
     }
 
-    public GoodsInOrder(Order order, Good good) {
+    public GoodsInOrder(Orders order, Good good) {
         this.order = order;
         this.good = good;
     }
@@ -20,11 +22,11 @@ public class GoodsInOrder {
     public void setId(int id) {
         this.id = id;
     }
-    public Order getOrder() {
+    public Orders getOrder() {
         return order;
     }
 
-    public void setOrder(Order order) {
+    public void setOrder(Orders order) {
         this.order = order;
     }
 
