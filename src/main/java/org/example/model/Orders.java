@@ -1,20 +1,17 @@
 package org.example.model;
 
-import org.example.Id;
-import org.example.model.Client;
-
 public class Orders {
     @Id
     private int id;
 
-    private Client client;
+    private int client_id;
 //    private GoodsInOrder goods;
 
     public Orders() {
     }
 
-    public Orders(Client client) { //, GoodsInOrder goods
-        this.client = client;
+    public Orders(int client_id) { //, GoodsInOrder goods
+        this.client_id = client_id;
 //        this.goods = goods;
     }
 
@@ -25,12 +22,12 @@ public class Orders {
     public void setId(int id) {
         this.id = id;
     }
-    public Client getClient() {
-        return client;
+    public int getClient() {
+        return client_id;
     }
 
-    public void setClient(Client client) {
-        this.client = client;
+    public void setClient(int client_id) {
+        this.client_id = client_id;
     }
 
 //    public GoodsInOrder getGoodsInOrder() {

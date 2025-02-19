@@ -1,12 +1,9 @@
 package org.example.dao;
 
-import org.example.Id;
+import org.example.model.Id;
 
 import java.lang.reflect.Field;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,8 +31,10 @@ public class AbstractDAO <T> {
             if(f != id){
                 f.setAccessible(true);
                 sql.append(f.getName()).append(" ");
-                if(f.getType()==int.class || f.getType()== Class.class){
+                if(f.getType()==int.class){
                     sql.append("INT,");
+                }else if (f.getType()==Class.class){
+                    sql.append("VARCHAR(100),");
                 }else if (f.getType()==String.class){
                     sql.append("VARCHAR(100),");
                 }else if (f.getType()==double.class){
@@ -71,12 +70,45 @@ public class AbstractDAO <T> {
             names.deleteCharAt(names.length()-1);
             values.deleteCharAt(values.length()-1);
 
-            String sql="INSERT INTO "+table+"("+names+
-                    ") VALUES("+values+")";
+            String sql="INSERT INTO "+table+"("+names.toString()+
+                    ") VALUES("+values.toString()+")";
             try (Statement st = conn.createStatement()){
                 st.execute(sql);
             }
         } catch (Exception ex){
+            throw new RuntimeException(ex);
+        }
+    }
+    public void update(T t) {
+        try {
+            Field[] fields = t.getClass().getDeclaredFields();
+            Field id = getPrimaryKeyField(t, fields);
+
+            StringBuilder sb = new StringBuilder();
+
+            for (Field f : fields) {
+                if (f != id) {
+                    f.setAccessible(true);
+
+                    sb.append(f.getName())
+                            .append(" = ")
+                            .append('"')
+                            .append(f.get(t))
+                            .append('"')
+                            .append(',');
+                }
+            }
+
+            sb.deleteCharAt(sb.length() - 1);
+
+            // update t set name = "aaaa", age = "22" where id = 5
+            String sql = "UPDATE " + table + " SET " + sb.toString() + " WHERE " +
+                    id.getName() + " = \"" + id.get(t) + "\"";
+
+            try (Statement st = conn.createStatement()) {
+                st.execute(sql);
+            }
+        } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
@@ -96,6 +128,33 @@ public class AbstractDAO <T> {
                         }
                         res.add(t);
                     }
+                }
+            }
+            return res;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    public List<T> findIdByName(Class<T> cls, String name) {
+        List<T> res = new ArrayList<>();
+        try {
+            try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM "+table+" WHERE name=?")) {
+                ps.setString(1, name);
+                ResultSet rs = ps.executeQuery();
+                try {
+                    ResultSetMetaData md = rs.getMetaData();
+                    while (rs.next()) {
+                        T t = cls.getDeclaredConstructor().newInstance();
+                        for (int i = 1; i <= md.getColumnCount(); i++) {
+                            String columnName = md.getColumnName(i);
+                            Field field = cls.getDeclaredField(columnName);
+                            field.setAccessible(true);
+                            field.set(t, rs.getObject(columnName));
+                        }
+                        res.add(t);
+                    }
+                } finally {
+                    rs.close();
                 }
             }
             return res;

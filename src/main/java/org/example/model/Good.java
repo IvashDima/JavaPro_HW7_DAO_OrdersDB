@@ -1,7 +1,5 @@
 package org.example.model;
 
-import org.example.Id;
-
 public class Good {
     @Id
     private int id;
