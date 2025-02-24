@@ -3,6 +3,7 @@ package org.example.dao;
 import org.example.model.Id;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,26 +115,31 @@ public class AbstractDAO <T> {
     }
     public List<T> getAll(Class<T> cls) {
         List<T> res = new ArrayList<>();
-        try {
-            try (Statement st = conn.createStatement()) {
-                try (ResultSet rs = st.executeQuery("SELECT * FROM " + table)) {
-                    ResultSetMetaData md = rs.getMetaData();
-                    while (rs.next()) {
-                        T t = cls.getDeclaredConstructor().newInstance();
-                        for (int i = 1; i <= md.getColumnCount(); i++) {
-                            String columnName = md.getColumnName(i);
-                            Field field = cls.getDeclaredField(columnName);
-                            field.setAccessible(true);
-                            field.set(t, rs.getObject(columnName));
+        try (Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery("SELECT * FROM " + table)) {
+            ResultSetMetaData md = rs.getMetaData();
+            while (rs.next()) {
+                T t = cls.getDeclaredConstructor().newInstance();
+                for (int i = 1; i <= md.getColumnCount(); i++) {
+                    String columnName = md.getColumnName(i);
+                    try{
+                        Field field = cls.getDeclaredField(columnName);
+                        field.setAccessible(true);
+                        Object value = rs.getObject(columnName);
+                        if (value instanceof BigDecimal) {
+                            value = ((BigDecimal) value).doubleValue();
                         }
-                        res.add(t);
+                        field.set(t, value);
+                    } catch (NoSuchFieldException e) {
+                        System.err.println("No field found for column: " + columnName);
                     }
                 }
+                res.add(t);
             }
-            return res;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+        return res;
     }
     public List<T> findIdByName(Class<T> cls, String name) {
         List<T> res = new ArrayList<>();

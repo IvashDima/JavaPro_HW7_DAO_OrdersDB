@@ -1,16 +1,16 @@
 package org.example.model;
 
-public class GoodsInOrder {
+public class ProductsInOrder {
     @Id
     private int id;
     private int order_id;
-    private int good_id;
-    public GoodsInOrder() {
+    private int product_id;
+    public ProductsInOrder() {
     }
 
-    public GoodsInOrder(int order_id, int good_id) {
+    public ProductsInOrder(int order_id, int product_id) {
         this.order_id = order_id;
-        this.good_id = good_id;
+        this.product_id = product_id;
     }
 
     public int getId() {
@@ -29,10 +29,10 @@ public class GoodsInOrder {
     }
 
     public int getGood() {
-        return good_id;
+        return product_id;
     }
 
-    public void setGood(int good_id) {
-        this.good_id = good_id;
+    public void setGood(int product_id) {
+        this.product_id = product_id;
     }
 }

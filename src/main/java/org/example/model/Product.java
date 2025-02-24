@@ -1,14 +1,16 @@
 package org.example.model;
 
-public class Client {
+public class Product {
     @Id
     private int id;
     private String name;
-    public Client() {
+    private double price;
+    public Product() {
     }
 
-    public Client(String name) {
+    public Product(String name, double price) {
         this.name = name;
+        this.price = price;
     }
 
     public int getId() {
@@ -26,8 +28,16 @@ public class Client {
     public void setName(String name) {
         this.name = name;
     }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
     @Override
     public String toString(){
-        return "Client{name='"+name+"'}";
+        return "Product{name='"+name+"', price="+price+"}";
     }
 }
