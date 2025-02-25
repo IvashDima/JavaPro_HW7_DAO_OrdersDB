@@ -5,8 +5,7 @@ public class Product {
     private int id;
     private String name;
     private double price;
-    public Product() {
-    }
+    public Product() {}
 
     public Product(String name, double price) {
         this.name = name;
@@ -38,6 +37,6 @@ public class Product {
     }
     @Override
     public String toString(){
-        return "Product{name='"+name+"', price="+price+"}";
+        return "Product{id="+id+", name='"+name+"', price="+price+"}";
     }
 }

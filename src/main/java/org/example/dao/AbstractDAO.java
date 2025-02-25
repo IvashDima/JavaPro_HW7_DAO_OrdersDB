@@ -57,12 +57,13 @@ public class AbstractDAO <T> {
     public void add(T t){
         try {
             Field[] fields = t.getClass().getDeclaredFields();
-            Field id = getPrimaryKeyField(t,fields);
+            Field idField = getPrimaryKeyField(t,fields);
+
             StringBuilder names = new StringBuilder();
             StringBuilder values = new StringBuilder();
 
             for (Field f: fields){
-                if(f!=id){
+                if(f!=idField){
                     f.setAccessible(true);
                     names.append(f.getName()).append(',');
                     values.append('"').append(f.get(t)).append("\",");
@@ -71,45 +72,19 @@ public class AbstractDAO <T> {
             names.deleteCharAt(names.length()-1);
             values.deleteCharAt(values.length()-1);
 
-            String sql="INSERT INTO "+table+"("+names.toString()+
-                    ") VALUES("+values.toString()+")";
-            try (Statement st = conn.createStatement()){
-                st.execute(sql);
-            }
-        } catch (Exception ex){
-            throw new RuntimeException(ex);
-        }
-    }
-    public void update(T t) {
-        try {
-            Field[] fields = t.getClass().getDeclaredFields();
-            Field id = getPrimaryKeyField(t, fields);
-
-            StringBuilder sb = new StringBuilder();
-
-            for (Field f : fields) {
-                if (f != id) {
-                    f.setAccessible(true);
-
-                    sb.append(f.getName())
-                            .append(" = ")
-                            .append('"')
-                            .append(f.get(t))
-                            .append('"')
-                            .append(',');
+            String sql="INSERT INTO "+table+"("+names+
+                    ") VALUES("+values+")";
+            try (PreparedStatement st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                st.executeUpdate();
+                try (ResultSet keys = st.getGeneratedKeys()) {
+                    if (keys.next()) {
+                        int generatedId = keys.getInt(1);  // Получаем ID
+                        idField.setAccessible(true);
+                        idField.setInt(t, generatedId);
+                    }
                 }
             }
-
-            sb.deleteCharAt(sb.length() - 1);
-
-            // update t set name = "aaaa", age = "22" where id = 5
-            String sql = "UPDATE " + table + " SET " + sb.toString() + " WHERE " +
-                    id.getName() + " = \"" + id.get(t) + "\"";
-
-            try (Statement st = conn.createStatement()) {
-                st.execute(sql);
-            }
-        } catch (Exception ex) {
+        } catch (Exception ex){
             throw new RuntimeException(ex);
         }
     }
@@ -141,11 +116,35 @@ public class AbstractDAO <T> {
         }
         return res;
     }
-    public List<T> findIdByName(Class<T> cls, String name) {
+    public T getObjById(Class<T> cls, int id) {
+        try {
+            String query = "SELECT * FROM "+table+" WHERE id=?";
+            try (PreparedStatement ps = conn.prepareStatement(query)) {
+                ps.setInt(1, id);
+                try (ResultSet rs = ps.executeQuery();){
+                    while (rs.next()) {
+                        T t = cls.getDeclaredConstructor().newInstance();
+                        ResultSetMetaData md = rs.getMetaData();
+                        for (int i = 1; i <= md.getColumnCount(); i++) {
+                            String columnName = md.getColumnName(i);
+                            Field field = cls.getDeclaredField(columnName);
+                            field.setAccessible(true);
+                            field.set(t, rs.getObject(columnName));
+                        }
+                        return t;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+        return null;
+    }
+    public List<T> findListById(Class<T> cls, int id) {
         List<T> res = new ArrayList<>();
         try {
-            try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM "+table+" WHERE name=?")) {
-                ps.setString(1, name);
+            try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM "+table+" WHERE order_id=?")) {
+                ps.setInt(1, id);
                 ResultSet rs = ps.executeQuery();
                 try {
                     ResultSetMetaData md = rs.getMetaData();
